@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import "./index.css";
 
@@ -24,12 +24,15 @@ function App() {
   ]);
 
   const [inputValue, setInputValue] = useState<string>("");
-  const [answers, setAnswers] = useState<inputWords[]>([]);
   const [counter, setCounter] = useState<number>(0);
+  const [timer, setTimer] = useState<number>(10);
+  const [disableInput, setDisableInput] = useState<boolean>(false);
+  const flipInterval = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const [istyping, setIsTyping] = useState<boolean>(true);
   const checkword = (value: string) => {
-    // console.log(value);
+    if (flipInterval.current === null) {
+      startTimer();
+    }
     setInputValue(value);
     if (value.includes(" ")) {
       const wordIsOk = words[counter].word === value.trimEnd();
@@ -42,33 +45,52 @@ function App() {
       };
       setWords(updatedWords);
       setCounter(counter + 1);
-
-      console.log(words);
       setInputValue("");
     } else {
-      console.log(
-        words[counter].word.slice(0, value.trim().length) === value.trim()
-      );
       const updatedWords = [...words];
-
       updatedWords[counter] = {
         ...updatedWords[counter],
         isTypingTrue:
           words[counter].word.slice(0, value.trim().length) === value.trim(),
       };
       setWords(updatedWords);
-      // setIsTyping(
-      //   words[counter].word.slice(0, value.trim().length) === value.trim()
-      // );
-      // setIsTyping(words[counter].word.includes(value.trim()));
     }
   };
 
-  useEffect(() => {}, [counter]);
+  useEffect(() => {
+    if (timer <= 0) {
+      if (flipInterval.current) {
+        clearInterval(flipInterval.current);
+        flipInterval.current = null;
+        setDisableInput(true);
+      }
+    }
+  }, [counter, disableInput, timer]);
+
+  const handleReset = () => {
+    setInputValue("");
+    const updatedWords: inputWords[] = words.map((item) => {
+      return { ...item, status: "Notcheck", isTypingTrue: true };
+    });
+    setWords(updatedWords);
+    setCounter(0);
+    if (flipInterval.current) {
+      clearInterval(flipInterval.current);
+      flipInterval.current = null;
+    }
+    setTimer(10);
+    setDisableInput(false);
+  };
+
+  const startTimer = () => {
+    flipInterval.current = setInterval(() => {
+      setTimer((old) => old - 1);
+    }, 1000);
+  };
 
   return (
-    <div className="w-full">
-      <div className="flex flex-row gap-x-3 w-full">
+    <div className="w-full flex flex-col justify-center items-center mt-6 h-screen ">
+      <div className="flex flex-row gap-x-3 w-1/2 justify-center border-2 p-2">
         {words.map((item, index) => {
           return (
             <p
@@ -88,20 +110,20 @@ function App() {
           );
         })}
       </div>
-      {/* <div>
-        {words.map((item, index) =>
-          answers[index] === item ? <p>true</p> : <p>false</p>
-        )}
-      </div> */}
-      <input
-        type="text"
-        className="border rounded-md mt-4 h-9 px-2 w-1/2"
-        placeholder="Start hear type words"
-        onChange={(e) => {
-          checkword(e.target.value);
-        }}
-        value={inputValue}
-      />
+      <div className="flex flex-row gap-x-3 mt-4 w-full items-center justify-center">
+        <input
+          type="text"
+          className="border rounded-md w-1/3 h-9 px-2 "
+          placeholder="Start hear type words"
+          onChange={(e) => {
+            checkword(e.target.value);
+          }}
+          disabled={disableInput}
+          value={inputValue}
+        />
+        <p className="bg-">{disableInput ? "time is over" : timer}</p>
+        <button onClick={() => handleReset()}>reset</button>{" "}
+      </div>
     </div>
   );
 }
