@@ -122,7 +122,9 @@ function App() {
           value={inputValue}
         />
         <p className="bg-">{disableInput ? "time is over" : timer}</p>
-        <button onClick={() => handleReset()}>reset</button>{" "}
+        <button className="bg-red-500" onClick={() => handleReset()}>
+          reset
+        </button>{" "}
       </div>
     </div>
   );
