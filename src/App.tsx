@@ -1,94 +1,107 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import "./index.css";
 
-type Truthy = "True" | "False" | "Not Check";
-interface word {
-  title: string;
-  check: Truthy;
+interface inputWords {
+  id: number;
+  word: string;
+  status: "True" | "False" | "Notcheck";
+  isTypingTrue: boolean;
 }
 
 function App() {
-  const [textInput, setTextInput] = useState<string>("");
-  const [words, setWords] = useState<word[]>([
-    { title: "bank", check: "Not Check" },
-    { title: "quest", check: "Not Check" },
-    { title: "interactive", check: "Not Check" },
-    { title: "cap", check: "Not Check" },
-    { title: "provincial", check: "Not Check" },
-    { title: "snake", check: "Not Check" },
-    { title: "coincide", check: "Not Check" },
-    { title: "treasurer", check: "Not Check" },
-    { title: "interface", check: "Not Check" },
-    { title: "slip", check: "Not Check" },
+  const [words, setWords] = useState<inputWords[]>([
+    { id: 0, word: "bank", status: "Notcheck", isTypingTrue: true },
+    { id: 1, word: "quest", status: "Notcheck", isTypingTrue: true },
+    { id: 2, word: "interactive", status: "Notcheck", isTypingTrue: true },
+    { id: 3, word: "cap", status: "Notcheck", isTypingTrue: true },
+    { id: 4, word: "provincial", status: "Notcheck", isTypingTrue: true },
+    { id: 5, word: "snake", status: "Notcheck", isTypingTrue: true },
+    { id: 6, word: "coincide", status: "Notcheck", isTypingTrue: true },
+    { id: 7, word: "treasurer", status: "Notcheck", isTypingTrue: true },
+    { id: 8, word: "interface", status: "Notcheck", isTypingTrue: true },
+    { id: 9, word: "slip", status: "Notcheck", isTypingTrue: true },
   ]);
-  const [answers, setAnswers] = useState<word[]>([]);
 
-  const check = (value: string) => {
-    setTextInput(value);
+  const [inputValue, setInputValue] = useState<string>("");
+  const [answers, setAnswers] = useState<inputWords[]>([]);
+  const [counter, setCounter] = useState<number>(0);
+
+  const [istyping, setIsTyping] = useState<boolean>(true);
+  const checkword = (value: string) => {
+    // console.log(value);
+    setInputValue(value);
     if (value.includes(" ")) {
-      let valueWithoutSpace = value.substring(0, value.length - 1);
-      const checkWordIsOk = words[answers.length].title === valueWithoutSpace;
+      const wordIsOk = words[counter].word === value.trimEnd();
 
-      setAnswers([
-        ...answers,
-        { title: valueWithoutSpace, check: checkWordIsOk ? "True" : "False" },
-      ]);
+      const updatedWords = [...words];
 
-      setTextInput("");
+      updatedWords[counter] = {
+        ...updatedWords[counter],
+        status: wordIsOk ? "True" : "False",
+      };
+      setWords(updatedWords);
+      setCounter(counter + 1);
+
+      console.log(words);
+      setInputValue("");
+    } else {
+      console.log(
+        words[counter].word.slice(0, value.trim().length) === value.trim()
+      );
+      const updatedWords = [...words];
+
+      updatedWords[counter] = {
+        ...updatedWords[counter],
+        isTypingTrue:
+          words[counter].word.slice(0, value.trim().length) === value.trim(),
+      };
+      setWords(updatedWords);
+      // setIsTyping(
+      //   words[counter].word.slice(0, value.trim().length) === value.trim()
+      // );
+      // setIsTyping(words[counter].word.includes(value.trim()));
     }
   };
-  useEffect(() => {}, [answers]);
 
-  const checkWord = (index: number) => {
-    if (answers[index]) {
-      switch (answers[index].check) {
-        case "False":
-          return "text-red-500";
-        case "True":
-          return "text-green-500";
-        case "Not Check":
-          return "";
+  useEffect(() => {}, [counter]);
 
-        default:
-          return "";
-      }
-    }
-  };
   return (
-    <div className="w-full flex flex-col justify-center items-center">
-      <div className="w-1/2 flex flex-col">
-        <div className="rounded-lg bg-neutral-100 w-full h-12 items-center flex flex-row overflow-hidden gap-2 px-4">
-          {words.map((item, index) => {
-            return (
-              <p
-                key={index}
-                className={`${
-                  answers.length === index ? "bg-gray-500 rounded-lg p-1" : ""
-                } ${answers.length > 0 && checkWord(index)}`}
-              >
-                {item.title}
-              </p>
-            );
-          })}
-        </div>
-
-        <input
-          type="text"
-          className="border rounded-md mt-4 h-9 px-2 w-1/2"
-          placeholder="Start hear type words"
-          onChange={(e) => check(e.target.value)}
-          value={textInput}
-        />
+    <div className="w-full">
+      <div className="flex flex-row gap-x-3 w-full">
+        {words.map((item, index) => {
+          return (
+            <p
+              className={`${item.id === counter ? "bg-gray-400 p-2" : ""} ${
+                item.status === "True"
+                  ? "text-green-600"
+                  : item.status === "False"
+                  ? "text-red-600"
+                  : ""
+              } ${item.isTypingTrue ? "" : "text-red-600"}
+                `}
+              key={index}
+              id={`${index}`}
+            >
+              {item.word}{" "}
+            </p>
+          );
+        })}
       </div>
-
-      {/* <div className="flex flex-row gap-3">
-        {answers.map((item, index) => (
-          <p key={index}>
-            {item.title} - {item.check}
-          </p>
-        ))}
+      {/* <div>
+        {words.map((item, index) =>
+          answers[index] === item ? <p>true</p> : <p>false</p>
+        )}
       </div> */}
+      <input
+        type="text"
+        className="border rounded-md mt-4 h-9 px-2 w-1/2"
+        placeholder="Start hear type words"
+        onChange={(e) => {
+          checkword(e.target.value);
+        }}
+        value={inputValue}
+      />
     </div>
   );
 }
