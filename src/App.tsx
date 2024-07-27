@@ -57,6 +57,18 @@ function App() {
     }
   };
 
+  const result = () => {
+    let correctWords = 0;
+    let inCorrectWords = 0;
+    for (let index = 0; index < words.length; index++)
+      if (words[index].status == "True") {
+        correctWords++;
+      } else if (words[index].status == "False") {
+        inCorrectWords++;
+      }
+    return { correctWords, inCorrectWords };
+  };
+
   useEffect(() => {
     if (timer <= 0) {
       if (flipInterval.current) {
@@ -125,6 +137,15 @@ function App() {
         <button className="bg-red-500" onClick={() => handleReset()}>
           reset
         </button>{" "}
+        {disableInput ? (
+          <>
+            <p>WPM</p>
+            <p>Correct words : {result().correctWords}</p>
+            <p>InCorrect Words: {result().inCorrectWords}</p>
+          </>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );
